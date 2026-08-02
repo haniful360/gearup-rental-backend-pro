@@ -3,14 +3,27 @@ import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/sendResponse';
 import { AdminServices } from './admin.service';
 import httpStatus from 'http-status';
+import {
+    IAdminGearQuery,
+    IAdminRentalQuery,
+    IAdminUserQuery,
+} from './admin.interface';
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminServices.getAllUsersFromDB();
+    const result = await AdminServices.getAllUsersFromDB(
+        req.query as IAdminUserQuery,
+    );
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: 'All registered users fetched successfully for administration management',
-        data: result,
+        data: result.data,
+        meta: {
+            page: result.meta.page,
+            limit: result.meta.limit,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.limit),
+        },
     });
 });
 
@@ -29,22 +42,38 @@ const updateUserStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllGearListings = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminServices.getAllGearListingsFromDB();
+    const result = await AdminServices.getAllGearListingsFromDB(
+        req.query as IAdminGearQuery,
+    );
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: 'Global gear items repository retrieved successfully',
-        data: result,
+        data: result.data,
+        meta: {
+            page: result.meta.page,
+            limit: result.meta.limit,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.limit),
+        },
     });
 });
 
 const getAllRentalOrders = catchAsync(async (req: Request, res: Response) => {
-    const result = await AdminServices.getAllRentalOrdersFromDB();
+    const result = await AdminServices.getAllRentalOrdersFromDB(
+        req.query as IAdminRentalQuery,
+    );
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: 'All comprehensive rental orders history retrieved successfully',
-        data: result,
+        data: result.data,
+        meta: {
+            page: result.meta.page,
+            limit: result.meta.limit,
+            total: result.meta.total,
+            totalPages: Math.ceil(result.meta.total / result.meta.limit),
+        },
     });
 });
 

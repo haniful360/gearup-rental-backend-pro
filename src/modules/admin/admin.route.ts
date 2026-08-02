@@ -8,7 +8,12 @@ import { Role } from '../../../generated/prisma/enums';
 const router = Router();
 
 // ADMIN authorization show all users
-router.get('/users', auth('ADMIN'), AdminControllers.getAllUsers);
+router.get(
+    '/users',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getAllUsersQuerySchema),
+    AdminControllers.getAllUsers
+);
 
 // user sespened
 router.patch(
@@ -19,9 +24,19 @@ router.patch(
 );
 
 // show all gear
-router.get('/gear', auth(Role.ADMIN), AdminControllers.getAllGearListings);
+router.get(
+    '/gear',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getAllGearQuerySchema),
+    AdminControllers.getAllGearListings
+);
 
 // show all rentall orders
-router.get('/rentals', auth(Role.ADMIN), AdminControllers.getAllRentalOrders);
+router.get(
+    '/rentals',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getAllRentalOrdersQuerySchema),
+    AdminControllers.getAllRentalOrders
+);
 
 export const adminRoutes = router;
