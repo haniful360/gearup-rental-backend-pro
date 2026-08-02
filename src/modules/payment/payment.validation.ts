@@ -16,7 +16,15 @@ const confirmPaymentValidationSchema = z.object({
   }),
 });
 
+const cancelPaymentValidationSchema = z.object({
+  body: z.object({
+    rentalOrderId: z.string().optional(),
+    sessionId: z.string().optional(),
+  }),
+});
+
 export const PaymentValidations = {
   createPaymentIntentValidationSchema,
   confirmPaymentValidationSchema,
+  cancelPaymentValidationSchema,
 };

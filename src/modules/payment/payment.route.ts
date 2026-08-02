@@ -23,6 +23,14 @@ router.post(
   PaymentControllers.confirmPayment,
 );
 
+// Cancel payment session
+router.post(
+  "/cancel",
+  auth(),
+  validateRequest(PaymentValidations.cancelPaymentValidationSchema),
+  PaymentControllers.cancelPayment,
+);
+
 // GET: Show all past transactions for a user
 router.get("/history", auth(), PaymentControllers.getUserPaymentHistory);
 

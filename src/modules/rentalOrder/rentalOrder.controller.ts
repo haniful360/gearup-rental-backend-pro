@@ -103,6 +103,22 @@ const getCustomerRecentReviews = catchAsync(
   },
 );
 
+const cancelRentalOrder = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const customerId = req.user?.id;
+  const result = await RentalOrderServices.cancelRentalOrderInDB(
+    id as string,
+    customerId as string,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Rental order cancelled successfully",
+    data: result,
+  });
+});
+
 export const RentalOrderControllers = {
   createRentalOrder,
   getUserRentalOrders,
@@ -110,4 +126,5 @@ export const RentalOrderControllers = {
   getCustomerOverview,
   getCustomerRecentOrders,
   getCustomerRecentReviews,
+  cancelRentalOrder,
 };

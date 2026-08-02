@@ -31,6 +31,13 @@ const createPaymentIntentInDB = async (
     throw new Error("This rental order has already been paid for!");
   }
 
+  if (
+    rentalOrder.status === OrderStatus.CANCELLED ||
+    rentalOrder.status === OrderStatus.REJECTED
+  ) {
+    throw new Error("Cannot make payment for a cancelled or rejected order!");
+  }
+
   // Generate Stripe Checkout Session
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -187,9 +194,50 @@ const getPaymentDetailsFromDB = async (
   return result;
 };
 
+// Cancel payment session and mark order as CANCELLED
+const cancelPaymentInDB = async (
+  customerId: string,
+  payload: { rentalOrderId?: string; sessionId?: string }
+) => {
+  const { rentalOrderId, sessionId } = payload;
+
+  if (!rentalOrderId && !sessionId) {
+    throw new Error("Rental order ID or Stripe Session ID is required to cancel payment!");
+  }
+
+  const rentalOrder = await prisma.rentalOrder.findFirst({
+    where: {
+      OR: [
+        ...(rentalOrderId ? [{ id: rentalOrderId }] : []),
+        ...(sessionId ? [{ transactionId: sessionId }] : []),
+      ],
+      customerId,
+    },
+  });
+
+  if (!rentalOrder) {
+    throw new Error("Rental order not found!");
+  }
+
+  if (rentalOrder.paymentStatus === PaymentStatus.PAID) {
+    throw new Error("Cannot cancel payment for an order that has already been paid for!");
+  }
+
+  const updatedOrder = await prisma.rentalOrder.update({
+    where: { id: rentalOrder.id },
+    data: {
+      status: OrderStatus.CANCELLED,
+      paymentStatus: PaymentStatus.FAILED,
+    },
+  });
+
+  return updatedOrder;
+};
+
 export const PaymentServices = {
   createPaymentIntentInDB,
   confirmPaymentInDB,
   getUserPaymentHistoryFromDB,
   getPaymentDetailsFromDB,
+  cancelPaymentInDB,
 };

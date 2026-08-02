@@ -185,6 +185,44 @@ const getCustomerOverviewFromDB = async (customerId: string) => {
   };
 };
 
+const cancelRentalOrderInDB = async (
+  rentalOrderId: string,
+  customerId: string,
+) => {
+  const rentalOrder = await prisma.rentalOrder.findUnique({
+    where: { id: rentalOrderId },
+  });
+
+  if (!rentalOrder) {
+    throw new Error("Rental order not found!");
+  }
+
+  if (rentalOrder.customerId !== customerId) {
+    throw new Error("You are not authorized to cancel this order!");
+  }
+
+  if (rentalOrder.paymentStatus === PaymentStatus.PAID) {
+    throw new Error("Cannot cancel an order that has already been paid for!");
+  }
+
+  if (
+    rentalOrder.status === OrderStatus.CANCELLED ||
+    rentalOrder.status === OrderStatus.REJECTED
+  ) {
+    throw new Error("Order is already cancelled or rejected!");
+  }
+
+  const updatedOrder = await prisma.rentalOrder.update({
+    where: { id: rentalOrderId },
+    data: {
+      status: OrderStatus.CANCELLED,
+      paymentStatus: PaymentStatus.FAILED,
+    },
+  });
+
+  return updatedOrder;
+};
+
 export const RentalOrderServices = {
   createRentalOrderInDB,
   getUserRentalOrdersFromDB,
@@ -192,4 +230,5 @@ export const RentalOrderServices = {
   getCustomerOverviewFromDB,
   getCustomerRecentOrdersFromDB,
   getCustomerRecentReviewsFromDB,
+  cancelRentalOrderInDB,
 };

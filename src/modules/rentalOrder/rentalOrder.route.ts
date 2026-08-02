@@ -44,4 +44,12 @@ router.get(
   RentalOrderControllers.getRentalOrderDetails,
 );
 
+// Cancel rental order by ID
+router.patch(
+  "/:id/cancel",
+  auth(),
+  validateRequest(RentalOrderValidations.getRentalOrderByIdValidationSchema),
+  RentalOrderControllers.cancelRentalOrder,
+);
+
 export const rentalOrderRoutes = router;

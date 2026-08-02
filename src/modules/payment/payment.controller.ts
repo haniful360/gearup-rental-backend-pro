@@ -62,9 +62,25 @@ const getPaymentDetails = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const cancelPayment = catchAsync(async (req: Request, res: Response) => {
+  const customerId = req.user?.id;
+  const result = await PaymentServices.cancelPaymentInDB(
+    customerId as string,
+    req.body,
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Payment cancelled successfully and order marked as cancelled",
+    data: result,
+  });
+});
+
 export const PaymentControllers = {
   createPaymentIntent,
   confirmPayment,
   getUserPaymentHistory,
   getPaymentDetails,
+  cancelPayment,
 };
