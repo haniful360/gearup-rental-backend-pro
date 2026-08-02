@@ -8,8 +8,8 @@ import {
 } from "./admin.interface";
 
 const computePagination = (page?: string, limit?: string) => {
-  const currentPage = Math.max(Number(page), 1);
-  const currentLimit = Math.max(Number(limit), 1);
+  const currentPage = Math.max(Number(page) || 1, 1);
+  const currentLimit = Math.max(Number(limit) || 10, 1);
   return {
     page: currentPage,
     limit: currentLimit,
@@ -18,9 +18,9 @@ const computePagination = (page?: string, limit?: string) => {
 };
 
 // GET /api/admin/users
-const getAllUsersFromDB = async (query: IAdminUserQuery) => {
-  const { role, status, searchTerm } = query;
-  const { page, limit, skip } = computePagination(query.page, query.limit);
+const getAllUsersFromDB = async (query: IAdminUserQuery = {}) => {
+  const { role, status, searchTerm } = query || {};
+  const { page, limit, skip } = computePagination(query?.page, query?.limit);
 
   const andConditions: Prisma.UserWhereInput[] = [];
 
@@ -87,9 +87,9 @@ const updateUserStatusInDB = async (
 };
 
 //  GET /api/admin/gear
-const getAllGearListingsFromDB = async (query: IAdminGearQuery) => {
-  const { searchTerm } = query;
-  const { page, limit, skip } = computePagination(query.page, query.limit);
+const getAllGearListingsFromDB = async (query: IAdminGearQuery = {}) => {
+  const { searchTerm } = query || {};
+  const { page, limit, skip } = computePagination(query?.page, query?.limit);
 
   const andConditions: Prisma.GearItemWhereInput[] = [];
 
@@ -122,8 +122,8 @@ const getAllGearListingsFromDB = async (query: IAdminGearQuery) => {
 };
 
 //  GET /api/admin/rentals
-const getAllRentalOrdersFromDB = async (query: IAdminRentalQuery) => {
-  const { page, limit, skip } = computePagination(query.page, query.limit);
+const getAllRentalOrdersFromDB = async (query: IAdminRentalQuery = {}) => {
+  const { page, limit, skip } = computePagination(query?.page, query?.limit);
 
   const data = await prisma.rentalOrder.findMany({
     include: {

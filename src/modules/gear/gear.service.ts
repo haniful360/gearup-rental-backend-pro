@@ -79,8 +79,8 @@ const getAllGearsFromDB = async (query: IGearQueryFilters) => {
     const whereConditions: Prisma.GearItemWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
 
     // pagination
-    const currentPage = Math.max(Number(page), 1);
-    const currentLimit = Math.max(Number(limit), 1);
+    const currentPage = Math.max(Number(page) || 1, 1);
+    const currentLimit = Math.max(Number(limit) || 10, 1);
     const skip = (currentPage - 1) * currentLimit;
 
     const result = await prisma.gearItem.findMany({
