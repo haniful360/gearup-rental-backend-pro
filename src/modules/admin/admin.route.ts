@@ -39,4 +39,34 @@ router.get(
     AdminControllers.getAllRentalOrders
 );
 
+// admin dashboard overview stats + recent data
+router.get('/overview', auth(Role.ADMIN), AdminControllers.getAdminOverview);
+
+// recent rentals
+router.get(
+    '/recent-rentals',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getRecentQuerySchema),
+    AdminControllers.getRecentRentals
+);
+
+// recent users
+router.get(
+    '/recent-users',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getRecentQuerySchema),
+    AdminControllers.getRecentUsers
+);
+
+// payment statistics
+router.get('/payment-stats', auth(Role.ADMIN), AdminControllers.getPaymentStats);
+
+// top rented gears
+router.get(
+    '/top-gears',
+    auth(Role.ADMIN),
+    validateRequest(AdminValidations.getRecentQuerySchema),
+    AdminControllers.getTopGears
+);
+
 export const adminRoutes = router;

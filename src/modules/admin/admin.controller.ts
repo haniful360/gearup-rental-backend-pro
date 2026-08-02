@@ -77,9 +77,67 @@ const getAllRentalOrders = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAdminOverview = catchAsync(async (req: Request, res: Response) => {
+    const result = await AdminServices.getAdminOverviewFromDB();
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Admin dashboard overview fetched successfully',
+        data: result,
+    });
+});
+
+const getRecentRentals = catchAsync(async (req: Request, res: Response) => {
+    const limit = Math.max(Number(req.query.limit) || 5, 1);
+    const result = await AdminServices.getRecentRentalsFromDB(limit);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Recent rental orders fetched successfully',
+        data: result,
+    });
+});
+
+const getRecentUsers = catchAsync(async (req: Request, res: Response) => {
+    const limit = Math.max(Number(req.query.limit) || 5, 1);
+    const result = await AdminServices.getRecentUsersFromDB(limit);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Recent registered users fetched successfully',
+        data: result,
+    });
+});
+
+const getPaymentStats = catchAsync(async (req: Request, res: Response) => {
+    const result = await AdminServices.getPaymentStatsFromDB();
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Payment statistics fetched successfully',
+        data: result,
+    });
+});
+
+const getTopGears = catchAsync(async (req: Request, res: Response) => {
+    const limit = Math.max(Number(req.query.limit) || 5, 1);
+    const result = await AdminServices.getTopGearsFromDB(limit);
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Top rented gear items fetched successfully',
+        data: result,
+    });
+});
+
 export const AdminControllers = {
     getAllUsers,
     updateUserStatus,
     getAllGearListings,
     getAllRentalOrders,
+    getAdminOverview,
+    getRecentRentals,
+    getRecentUsers,
+    getPaymentStats,
+    getTopGears,
 };

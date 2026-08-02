@@ -34,9 +34,16 @@ const getAllRentalOrdersQuerySchema = z.object({
     }).passthrough(),
 });
 
+const getRecentQuerySchema = z.object({
+    query: z.object({
+        limit: z.string().optional(),
+    }).passthrough(),
+});
+
 export const AdminValidations = {
     updateUserStatusValidationSchema,
     getAllUsersQuerySchema,
     getAllGearQuerySchema,
     getAllRentalOrdersQuerySchema,
+    getRecentQuerySchema,
 };

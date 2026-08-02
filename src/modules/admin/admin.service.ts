@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 import { Prisma } from "../../../generated/prisma/client";
-import { Role } from "../../../generated/prisma/enums";
+import { OrderStatus, Role } from "../../../generated/prisma/enums";
 import {
   IAdminGearQuery,
   IAdminRentalQuery,
@@ -143,9 +143,152 @@ const getAllRentalOrdersFromDB = async (query: IAdminRentalQuery) => {
   return { meta: { page, limit, total }, data };
 };
 
+const getRecentRentalsFromDB = async (limit: number) => {
+  return await prisma.rentalOrder.findMany({
+    include: {
+      customer: {
+        select: { id: true, name: true, email: true },
+      },
+      gearItem: {
+        select: { id: true, title: true, images: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+};
+
+const getRecentUsersFromDB = async (limit: number) => {
+  return await prisma.user.findMany({
+    omit: {
+      password: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+};
+
+// GET /api/admin/payment-stats
+const getPaymentStatsFromDB = async () => {
+  const [totalPayments, paidRevenue, paid, pending, failed, refunded] =
+    await Promise.all([
+      prisma.payment.count(),
+      prisma.payment.aggregate({
+        where: { status: "PAID" },
+        _sum: { amount: true },
+      }),
+      prisma.payment.count({ where: { status: "PAID" } }),
+      prisma.payment.count({ where: { status: "PENDING" } }),
+      prisma.payment.count({ where: { status: "FAILED" } }),
+      prisma.payment.count({ where: { status: "REFUNDED" } }),
+    ]);
+
+  return {
+    totalPayments,
+    totalRevenue: paidRevenue._sum.amount ?? 0,
+    byStatus: {
+      PAID: paid,
+      PENDING: pending,
+      FAILED: failed,
+      REFUNDED: refunded,
+    },
+  };
+};
+
+// GET /api/admin/top-gears
+const getTopGearsFromDB = async (limit: number) => {
+  const result = await prisma.gearItem.findMany({
+    include: {
+      _count: { select: { orders: true } },
+      category: { select: { id: true, name: true } },
+      provider: { select: { id: true, name: true } },
+    },
+    orderBy: { orders: { _count: "desc" } },
+    take: limit,
+  });
+
+  return result.map(({ _count, ...gear }) => ({
+    ...gear,
+    rentalCount: _count.orders,
+  }));
+};
+
+// GET /api/admin/overview
+const getAdminOverviewFromDB = async () => {
+  const activeOrderStatuses: OrderStatus[] = [
+    OrderStatus.PLACED,
+    OrderStatus.CONFIRMED,
+    OrderStatus.PAID,
+    OrderStatus.PICKED_UP,
+  ];
+
+  const [
+    totalUsers,
+    totalProviders,
+    totalCustomers,
+    totalSuspendedUsers,
+    totalGearListings,
+    totalActiveGear,
+    totalFeaturedGear,
+    totalRentals,
+    totalActiveRentals,
+    totalCompletedRentals,
+    totalCategories,
+    totalReviews,
+    paidRevenue,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { role: "PROVIDER" } }),
+    prisma.user.count({ where: { role: "CUSTOMER" } }),
+    prisma.user.count({ where: { isSuspended: true } }),
+    prisma.gearItem.count(),
+    prisma.gearItem.count({ where: { isAvailable: true } }),
+    prisma.gearItem.count({ where: { isFeature: true } }),
+    prisma.rentalOrder.count(),
+    prisma.rentalOrder.count({
+      where: { status: { in: activeOrderStatuses } },
+    }),
+    prisma.rentalOrder.count({ where: { status: "RETURNED" } }),
+    prisma.category.count(),
+    prisma.review.count(),
+    prisma.rentalOrder.aggregate({
+      where: { paymentStatus: "PAID" },
+      _sum: { totalPrice: true },
+    }),
+  ]);
+
+  const recentRentals = await getRecentRentalsFromDB(5);
+  const recentUsers = await getRecentUsersFromDB(5);
+
+  return {
+    stats: {
+      totalUsers,
+      totalProviders,
+      totalCustomers,
+      totalSuspendedUsers,
+      totalGearListings,
+      totalActiveGear,
+      totalFeaturedGear,
+      totalRentals,
+      totalActiveRentals,
+      totalCompletedRentals,
+      totalRevenue: paidRevenue._sum.totalPrice ?? 0,
+      totalCategories,
+      totalReviews,
+    },
+    recentRentals,
+    recentUsers,
+  };
+};
+
 export const AdminServices = {
   getAllUsersFromDB,
   updateUserStatusInDB,
   getAllGearListingsFromDB,
   getAllRentalOrdersFromDB,
+  getAdminOverviewFromDB,
+  getRecentRentalsFromDB,
+  getRecentUsersFromDB,
+  getPaymentStatsFromDB,
+  getTopGearsFromDB,
 };
