@@ -17,6 +17,25 @@ router.post(
 // Get user's rental orders
 router.get("/all-orders", auth(), RentalOrderControllers.getUserRentalOrders);
 
+// Customer dashboard overview
+router.get("/overview", auth(), RentalOrderControllers.getCustomerOverview);
+
+// Customer recent orders
+router.get(
+  "/recent-orders",
+  auth(),
+  validateRequest(RentalOrderValidations.getRecentQuerySchema),
+  RentalOrderControllers.getCustomerRecentOrders,
+);
+
+// Customer recent reviews
+router.get(
+  "/recent-reviews",
+  auth(),
+  validateRequest(RentalOrderValidations.getRecentQuerySchema),
+  RentalOrderControllers.getCustomerRecentReviews,
+);
+
 // Get rental order details by ID
 router.get(
   "/:id",

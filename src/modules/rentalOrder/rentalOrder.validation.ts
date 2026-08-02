@@ -36,7 +36,14 @@ const getRentalOrderByIdValidationSchema = z.object({
   }),
 });
 
+const getRecentQuerySchema = z.object({
+  query: z.object({
+    limit: z.string().optional(),
+  }).passthrough(),
+});
+
 export const RentalOrderValidations = {
   createRentalOrderValidationSchema,
   getRentalOrderByIdValidationSchema,
+  getRecentQuerySchema,
 };

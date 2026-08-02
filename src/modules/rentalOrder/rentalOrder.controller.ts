@@ -51,8 +51,63 @@ const getRentalOrderDetails = catchAsync(
   },
 );
 
+const getCustomerOverview = catchAsync(
+  async (req: Request, res: Response) => {
+    const customerId = req.user?.id;
+    const result = await RentalOrderServices.getCustomerOverviewFromDB(
+      customerId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Customer dashboard overview fetched successfully",
+      data: result,
+    });
+  },
+);
+
+const getCustomerRecentOrders = catchAsync(
+  async (req: Request, res: Response) => {
+    const customerId = req.user?.id;
+    const limit = Math.max(Number(req.query.limit) || 5, 1);
+    const result = await RentalOrderServices.getCustomerRecentOrdersFromDB(
+      customerId as string,
+      limit,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Customer recent rental orders fetched successfully",
+      data: result,
+    });
+  },
+);
+
+const getCustomerRecentReviews = catchAsync(
+  async (req: Request, res: Response) => {
+    const customerId = req.user?.id;
+    const limit = Math.max(Number(req.query.limit) || 5, 1);
+    const result = await RentalOrderServices.getCustomerRecentReviewsFromDB(
+      customerId as string,
+      limit,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Customer recent reviews fetched successfully",
+      data: result,
+    });
+  },
+);
+
 export const RentalOrderControllers = {
   createRentalOrder,
   getUserRentalOrders,
   getRentalOrderDetails,
+  getCustomerOverview,
+  getCustomerRecentOrders,
+  getCustomerRecentReviews,
 };

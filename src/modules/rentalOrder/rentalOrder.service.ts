@@ -2,6 +2,18 @@ import { OrderStatus, PaymentStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreateRentalOrderPayload } from "./rentalOrder.interface";
 
+const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
+  OrderStatus.PLACED,
+  OrderStatus.CONFIRMED,
+  OrderStatus.PAID,
+  OrderStatus.PICKED_UP,
+];
+
+const CANCELLED_ORDER_STATUSES: OrderStatus[] = [
+  OrderStatus.CANCELLED,
+  OrderStatus.REJECTED,
+];
+
 // Create a new rental order
 // import { OrderStatus, PaymentStatus } from "@prisma/client";
 
@@ -86,8 +98,98 @@ const getRentalOrderDetailsFromDB = async (
   return result;
 };
 
+const getCustomerRecentOrdersFromDB = async (
+  customerId: string,
+  limit: number,
+) => {
+  return await prisma.rentalOrder.findMany({
+    where: { customerId },
+    include: {
+      gearItem: {
+        select: { id: true, title: true, images: true, pricePerDay: true },
+      },
+      payments: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+};
+
+const getCustomerRecentReviewsFromDB = async (
+  customerId: string,
+  limit: number,
+) => {
+  return await prisma.review.findMany({
+    where: { customerId },
+    include: {
+      gearItem: {
+        select: { id: true, title: true, images: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+};
+
+const getCustomerOverviewFromDB = async (customerId: string) => {
+  const [
+    totalOrders,
+    activeRentals,
+    completedRentals,
+    cancelledRentals,
+    pendingPayments,
+    totalSpent,
+    totalReviews,
+    distinctGearsRented,
+  ] = await Promise.all([
+    prisma.rentalOrder.count({ where: { customerId } }),
+    prisma.rentalOrder.count({
+      where: { customerId, status: { in: ACTIVE_ORDER_STATUSES } },
+    }),
+    prisma.rentalOrder.count({
+      where: { customerId, status: OrderStatus.RETURNED },
+    }),
+    prisma.rentalOrder.count({
+      where: { customerId, status: { in: CANCELLED_ORDER_STATUSES } },
+    }),
+    prisma.rentalOrder.count({
+      where: { customerId, paymentStatus: PaymentStatus.PENDING },
+    }),
+    prisma.rentalOrder.aggregate({
+      where: { customerId, paymentStatus: PaymentStatus.PAID },
+      _sum: { totalPrice: true },
+    }),
+    prisma.review.count({ where: { customerId } }),
+    prisma.rentalOrder.groupBy({
+      by: ["gearItemId"],
+      where: { customerId },
+    }),
+  ]);
+
+  const recentOrders = await getCustomerRecentOrdersFromDB(customerId, 5);
+  const recentReviews = await getCustomerRecentReviewsFromDB(customerId, 5);
+
+  return {
+    stats: {
+      totalOrders,
+      activeRentals,
+      completedRentals,
+      cancelledRentals,
+      pendingPayments,
+      totalSpent: totalSpent._sum.totalPrice ?? 0,
+      totalReviews,
+      distinctGearsRented: distinctGearsRented.length,
+    },
+    recentOrders,
+    recentReviews,
+  };
+};
+
 export const RentalOrderServices = {
   createRentalOrderInDB,
   getUserRentalOrdersFromDB,
   getRentalOrderDetailsFromDB,
+  getCustomerOverviewFromDB,
+  getCustomerRecentOrdersFromDB,
+  getCustomerRecentReviewsFromDB,
 };
