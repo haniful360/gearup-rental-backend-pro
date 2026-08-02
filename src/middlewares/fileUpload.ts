@@ -63,6 +63,14 @@ export const parseGearFormData = catchAsync(
 
 export const parseProfilePhoto = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
+        if (req.body && typeof req.body.data === "string") {
+            try {
+                req.body = JSON.parse(req.body.data);
+            } catch (error) {
+                // Keep req.body as is if parsing fails
+            }
+        }
+
         const file = req.file as Express.Multer.File | undefined;
 
         if (file) {

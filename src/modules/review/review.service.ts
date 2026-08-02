@@ -13,7 +13,7 @@ const createReviewInDB = async (
         where: {
             customerId: customerId,
             gearItemId: gearItemId,
-            status: OrderStatus.COMPLETED,
+            status: OrderStatus.RETURNED,
         },
     });
 
