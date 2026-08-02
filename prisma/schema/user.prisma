@@ -1,0 +1,19 @@
+// User enum for Role-Based Access Control (RBAC)
+model User {
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  password         String
+  role             Role     @default(CUSTOMER)
+  isSuspended      Boolean  @default(false)
+  suspensionReason String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  gearItems    GearItem[]
+  rentalOrders RentalOrder[]
+  reviews      Review[]
+  profiles     Profile?
+
+  @@map("users")
+}

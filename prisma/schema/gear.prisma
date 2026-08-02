@@ -1,0 +1,42 @@
+model GearItem {
+    id          String  @id @default(uuid())
+    title       String
+    description String
+    pricePerDay Float
+    location    String
+    brand       String
+    stock       Int     @default(1)
+    isAvailable Boolean @default(true)
+    isFeature   Boolean @default(false)
+    images      String[] @default([])
+
+    // Relations
+    providerId String
+    provider   User   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+    categoryId String
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+    reviews   Review[]
+    orders    RentalOrder[]
+    
+    createdAt DateTime      @default(now())
+    updatedAt DateTime      @updatedAt
+
+    @@map("gear_items")
+}
+
+model Category {
+    id          String  @id @default(uuid())
+    name        String  @unique
+    slug        String  @unique
+    description String?
+    image       String?
+
+    // Relations
+    gearItems GearItem[] // one category can have many gear
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+
+    @@map("categories")
+}

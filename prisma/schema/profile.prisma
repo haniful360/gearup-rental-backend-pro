@@ -1,0 +1,13 @@
+model Profile {
+    id        String   @id @default(uuid())
+    photo     String?
+    bio       String?
+    phone     String?
+    address   String?
+    city      String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
