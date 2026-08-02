@@ -18,6 +18,20 @@ const updateProviderOrderStatusValidationSchema = z.object({
   }),
 });
 
+const getRecentQuerySchema = z.object({
+  query: z.object({
+    limit: z.string().optional(),
+  }).passthrough(),
+});
+
+const getLowStockQuerySchema = z.object({
+  query: z.object({
+    threshold: z.string().optional(),
+  }).passthrough(),
+});
+
 export const ProviderOrderValidations = {
   updateProviderOrderStatusValidationSchema,
+  getRecentQuerySchema,
+  getLowStockQuerySchema,
 };
