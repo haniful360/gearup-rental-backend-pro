@@ -30,6 +30,7 @@
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
+    "node-fetch": "^3.3.2",
     "pg": "^8.22.0",
     "stripe": "^22.3.0",
     "swagger-ui-express": "^5.0.1",
@@ -39,9 +40,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts",
-    "build": "tsup",
-    "start": "node dist/server.js"
+    "dev": "node init && tsx watch src/server.ts",
+    "build": "node init && tsup",
+    "start": "node init && node dist/server.js"
   },
   "keywords": [],
   "author": "",
