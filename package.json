@@ -39,9 +39,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts",
-    "build": "tsup",
-    "start": "node dist/server.js"
+    "dev": "node api.js && tsx watch src/server.ts",
+    "build": "node api.js && tsup",
+    "start": "node api.js && node dist/server.js"
   },
   "keywords": [],
   "author": "",
